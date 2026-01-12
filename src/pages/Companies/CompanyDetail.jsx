@@ -21,7 +21,7 @@ import { toast } from "react-hot-toast";
 import CompanySettingsPage from "@/pages/CompanySettings/CompanySettings";
 import Departments from "@/pages/Departments/Departments";
 import EmployeesTableEnhanced from "@/pages/Employees/EmployeesTableEnhanced";
-import CompanyHolidays from "./CompanyHolidays";
+// import CompanyHolidays from "./CompanyHolidays";
 
 export default function CompanyDetailPage() {
   const { companyId } = useParams();
@@ -170,7 +170,6 @@ export default function CompanyDetailPage() {
             { key: "settings", label: "Settings" },
             { key: "departments", label: "Departments" },
             { key: "employees", label: "Employees" },
-            { key: "holidays", label: "Holidays" },
           ].map((t) => (
             <button
               key={t.key}
