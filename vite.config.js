@@ -5,12 +5,11 @@ import path from "path"
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const isProd = String(env.VITE_IS_PRODUCTION || '').toLowerCase() === 'true'
-  const base = env.VITE_FRONTEND_BASE_PATH 
+  
   return {
-    base,
+    base: env.VITE_FRONTEND_BASE_PATH,
     build: {
-      outDir: isProd ? 'lms-adminpanel' : 'uatlms-adminpanel',
+      outDir: env.VITE_OUT_DIR,
       chunkSizeWarningLimit: 1024,
       rollupOptions: {
         output: {

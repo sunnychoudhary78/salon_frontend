@@ -285,7 +285,6 @@ export default function Roles() {
     if (!key) return "Other";
     if (key.endsWith("type")) key = key.slice(0, -4);
     if (key === "companysettings") key = "company";
-    if (key === "leave" || key === "leaves" || key === "leavetype" || key === "leaveallocation") key = "leaves";
     if (key === "role") key = "roles";
     if (key === "user") key = "users";
     return key.charAt(0).toUpperCase() + key.slice(1);
@@ -1306,10 +1305,8 @@ export default function Roles() {
                       const pri = (x) => {
                         const y = String(x).toLowerCase();
                         if (y === 'department') return 1;
-                        if (y === 'leaves') return 2;
                         if (y === 'roles') return 3;
                         if (y === 'users') return 4;
-                        if (y === 'attendance') return 5;
                         if (y === 'all') return 0;
                         return 99;
                       };

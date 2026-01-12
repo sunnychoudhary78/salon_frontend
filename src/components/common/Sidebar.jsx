@@ -190,10 +190,7 @@ export default function Sidebar() {
                        <Link to={m.to} className="flex items-center gap-3 p-3 w-full">
                           <div className="relative">
                             <span className={`${active ? "text-primary" : "text-gray-500"}`}>{m.icon}</span>
-                             {(() => {
-                                const c = m.key === 'leave' ? badgeCounts.leaves : (m.key === 'leave-approval' ? badgeCounts.approvals : 0);
-                                return c > 0 ? <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 ring-2 ring-white" /> : null;
-                             })()}
+                             {/* Badge logic removed */}
                           </div>
                           <span className={`font-medium ${active ? "text-sky-700" : "text-gray-700"}`}>{m.label}</span>
                        </Link>
@@ -262,7 +259,7 @@ export default function Sidebar() {
               >
                 <HiX className="text-xl" />
               </button>
-              <img src={`${import.meta.env.VITE_FRONTEND_BASE_PATH || '/'}impower_logo.jpg`} alt="logo" className="h-14" />
+              <img src={`${import.meta.env.VITE_FRONTEND_BASE_PATH || '/'}${appConfig.logo}`} alt="logo" className="h-14" />
             </div>
           )}
         </div>
@@ -286,7 +283,6 @@ export default function Sidebar() {
                         : "hover:bg-gray-50"
                       }`}
                   >
-                    {/* icon with optional tooltip when collapsed */}
                     <div className="relative">
                       {collapsed ? (
                         <Tooltip>

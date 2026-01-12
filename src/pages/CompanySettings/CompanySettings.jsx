@@ -139,7 +139,6 @@ export default function CompanySettingsPage({ isCompanyActive = true }) {
           <div className="rounded bg-gray-50 border overflow-hidden mb-4">
             {[
               { key: 'general', label: 'General' },
-              { key: 'calendar', label: 'Calendar' },
               { key: 'email', label: 'Email' },
               { key: 'designations', label: 'Designations' },
             ].map(t => (
@@ -293,59 +292,6 @@ export default function CompanySettingsPage({ isCompanyActive = true }) {
 
               <div className="flex items-center gap-2">
                 <Button onClick={save} disabled={saving || loading || !isCompanyActive}>{saving ? 'Saving…' : 'Save Settings'}</Button>
-                {error ? <span className="text-red-600 text-sm">{error}</span> : null}
-              </div>
-            </div>
-          )}
-
-          {tab === 'allocations' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {leaveTypes.map((t) => (
-                  <div key={t.id} className="flex items-center gap-3">
-                    <Label className="min-w-[180px]">{t.name} {!t.is_active && <span className="text-red-500 text-xs">(Inactive)</span>}</Label>
-                    <Input
-                      inputMode="decimal"
-                      value={String(allocByType[t.id] ?? '')}
-                      placeholder="0"
-                      onChange={(e) => {
-                        const v = e.target.value
-                        const cleaned = v.replace(/[^\d.]/g, '')
-                        setAllocByType((m) => ({ ...m, [t.id]: cleaned }))
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button onClick={save} disabled={saving || loading || !isCompanyActive}>{saving ? 'Saving…' : 'Save Allocations'}</Button>
-                {error ? <span className="text-red-600 text-sm">{error}</span> : null}
-              </div>
-            </div>
-          )}
-
-          {tab === 'probation' && (
-            <div className="space-y-4">
-              <h2 className='text-xs text-orange-400'>These are monthly allocations</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {leaveTypes.map((t) => (
-                  <div key={t.id} className="flex items-center gap-3">
-                    <Label className="min-w-[180px]">{t.name} {!t.is_active && <span className="text-red-500 text-xs">(Inactive)</span>}</Label>
-                    <Input
-                      inputMode="decimal"
-                      value={String(probationAllocByType[t.id] ?? '')}
-                      placeholder="0"
-                      onChange={(e) => {
-                        const v = e.target.value
-                        const cleaned = v.replace(/[^\d.]/g, '')
-                        setProbationAllocByType((m) => ({ ...m, [t.id]: cleaned }))
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button onClick={save} disabled={saving || loading || !isCompanyActive}>{saving ? 'Saving…' : 'Save Allocations'}</Button>
                 {error ? <span className="text-red-600 text-sm">{error}</span> : null}
               </div>
             </div>
