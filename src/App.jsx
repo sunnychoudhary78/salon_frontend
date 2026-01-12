@@ -19,7 +19,7 @@ const EmployeeForm = React.lazy(() => import('./pages/Employees/EmployeeForm'));
 const Departments = React.lazy(() => import('./pages/Departments/Departments'));
 const Roles = React.lazy(() => import('./pages/RolesAndPermissions/Roles'));
 const AdminsPage = React.lazy(() => import('./pages/Admins/Admins'));
-const DesignationsPage = React.lazy(() => import('./pages/Designations/Designations'));
+const VariablesPage = React.lazy(() => import('./pages/Variables/Variables'));
 const MyDetailsPage = React.lazy(() => import('./pages/MyDetails/MyDetails'));
 
 function Spinner() {
@@ -122,10 +122,10 @@ export default function App() {
           />
 
           <Route
-            path="/designations"
+            path="/variables"
             element={
               <RequirePermission permission="variables.read">
-                <DesignationsPage />
+                <VariablesPage />
               </RequirePermission>
             }
           />

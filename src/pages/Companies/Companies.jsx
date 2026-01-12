@@ -3,7 +3,24 @@ import api from "@/api/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { MdDragIndicator } from "react-icons/md";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +52,7 @@ export default function CompaniesPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mode, setMode] = useState("create");
@@ -42,9 +60,14 @@ export default function CompaniesPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
+  const [sequenceOrder, setSequenceOrder] = useState(0);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const [sequenceOpen, setSequenceOpen] = useState(false);
+  const [sequenceItems, setSequenceItems] = useState([]);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmData, setConfirmData] = useState(null);
@@ -61,6 +84,7 @@ export default function CompaniesPage() {
         page,
         limit,
         query: search,
+        statusFilter: statusFilter === 'all' ? undefined : statusFilter,
         ...overrides,
       });
       const list = Array.isArray(res?.data?.rows) ? res.data.rows : [];
@@ -74,14 +98,72 @@ export default function CompaniesPage() {
     }
   };
 
-  useEffect(() => { fetchRows(); }, [page, limit]);
+  useEffect(() => { fetchRows(); }, [page, limit, statusFilter]);
   useEffect(() => {
     const t = setTimeout(() => { setPage(1); fetchRows({ page: 1 }); }, 250);
     return () => clearTimeout(t);
   }, [search]);
 
-  const openCreate = () => { setMode("create"); setEditing(null); setName(""); setDescription(""); setAddress(""); setLogoFile(null); setLogoPreview(null); setDialogOpen(true); };
-  const openEdit = (row) => { setMode("edit"); setEditing(row); setName(row?.name || ""); setDescription(row?.description || ""); setAddress(row?.address || ""); setLogoFile(null); setLogoPreview(row?.logo_filename ? UPLOAD_BASE + row.logo_filename : null); setDialogOpen(true); };
+  const openCreate = () => { setMode("create"); setEditing(null); setName(""); setDescription(""); setAddress(""); setSequenceOrder(0); setLogoFile(null); setLogoPreview(null); setDialogOpen(true); };
+  const openEdit = (row) => { setMode("edit"); setEditing(row); setName(row?.name || ""); setDescription(row?.description || ""); setAddress(row?.address || ""); setSequenceOrder(row?.sequence_order || 0); setLogoFile(null); setLogoPreview(row?.logo_filename ? UPLOAD_BASE + row.logo_filename : null); setDialogOpen(true); };
+
+  const SortableItem = ({ id, item }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+    return (
+      <div ref={setNodeRef} style={style} className="flex items-center justify-between gap-3 p-2 border rounded bg-white">
+        <div className="flex items-center gap-3">
+          <div {...attributes} {...listeners} className="cursor-grab p-1">
+            <MdDragIndicator className="w-4 h-4" />
+          </div>
+          <div className="text-sm">{item.name}</div>
+        </div>
+        <div className="text-xs text-slate-500">#{item.sequence_order ?? '-'}</div>
+      </div>
+    )
+  }
+
+  const openSequenceDialog = async () => {
+    try {
+      const res = await api.post("/companies/query", { page: 1, limit: 500 });
+      const list = Array.isArray(res?.data?.rows) ? res.data.rows : [];
+      const sorted = list.slice().sort((a, b) => {
+        const ai = a.sequence_order ?? Number.MAX_SAFE_INTEGER;
+        const bi = b.sequence_order ?? Number.MAX_SAFE_INTEGER;
+        if (ai !== bi) return ai - bi;
+        return String(a.name).localeCompare(String(b.name));
+      });
+      setSequenceItems(sorted);
+      setSequenceOpen(true);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to load companies");
+    }
+  }
+
+  const onSequenceDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = sequenceItems.findIndex((c) => c.id === active.id);
+    const newIndex = sequenceItems.findIndex((c) => c.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const next = arrayMove(sequenceItems, oldIndex, newIndex);
+    setSequenceItems(next);
+  }
+
+  const saveSequence = async () => {
+    try {
+      const ids = sequenceItems.map(i => i.id);
+      await api.post("/companies/reorder", { ids });
+      toast.success("Sequence updated");
+      setSequenceOpen(false);
+      await fetchRows();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to update sequence");
+    }
+  }
 
   const save = async () => {
     if (!name.trim()) { toast.error("Name is required"); return; }
@@ -92,6 +174,7 @@ export default function CompaniesPage() {
       fd.append("name", name.trim());
       if (description != null) fd.append("description", description);
       if (address != null) fd.append("address", address);
+      fd.append("sequence_order", sequenceOrder);
       if (logoFile) fd.append("logo", logoFile);
       if (mode === "create") {
         await api.post("/companies", fd, { headers: { "Content-Type": "multipart/form-data" } });
@@ -156,10 +239,53 @@ export default function CompaniesPage() {
         <div className="p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search company" className="w-64" />
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
           <div className="flex items-center gap-2">
             <RequirePermission permission="company.create">
               <Button onClick={openCreate}>Add Company</Button>
+            </RequirePermission>
+            <RequirePermission permission="company.create">
+              <Dialog open={sequenceOpen} onOpenChange={setSequenceOpen}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" onClick={openSequenceDialog} size="icon"><MdDragIndicator /></Button>
+                    </DialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit sequence</TooltipContent>
+                </Tooltip>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Arrange Companies</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <ScrollArea className="max-h-[60vh] p-1">
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onSequenceDragEnd}>
+                        <SortableContext items={sequenceItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-2">
+                            {sequenceItems.map((it) => (
+                              <SortableItem key={it.id} id={it.id} item={it} />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    </ScrollArea>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" onClick={() => setSequenceOpen(false)}>Cancel</Button>
+                      <Button onClick={saveSequence}>Save</Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </RequirePermission>
           </div>
         </div>
@@ -245,6 +371,15 @@ export default function CompaniesPage() {
                 onChange={(e) => setAddress(e.target.value)}
                 className="resize-none"
                 rows={4}
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Sequence Order</label>
+              <Input
+                type="number"
+                value={sequenceOrder}
+                onChange={(e) => setSequenceOrder(e.target.value)}
+                placeholder="0"
               />
             </div>
             <div>

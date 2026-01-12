@@ -15,6 +15,7 @@ import {
   Building2 as LuBuilding2
 } from "lucide-react";
 import api from "@/api/axios";
+import { appConfig } from "@/config/appConfig";
 
 export default function Sidebar() {
   const dispatch = useDispatch();
@@ -119,8 +120,8 @@ export default function Sidebar() {
     },
     {
       key: "designations",
-      label: "Configurations",
-      to: "/designations",
+      label: "Variables",
+      to: "/variables",
       icon: <LuSettings2 className="text-lg" />,
       perms: ["variables.read"],
     },
