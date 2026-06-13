@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RequirePermission from './components/common/RequirePermission';
@@ -6,21 +5,21 @@ import RequireAuth from './components/common/RequireAuth';
 import AppLayout from './components/common/AppLayout';
 import { useDispatch, useSelector } from 'react-redux';
 import { restoreSession } from './store/auth/authSlice';
-import EmployeesTableEnhanced from './pages/Employees/EmployeesTableEnhanced';
-const CompanySettingsPage = React.lazy(() => import('./pages/CompanySettings/CompanySettings'));
-const CompaniesPage = React.lazy(() => import('./pages/Companies/Companies'));
-const CompanyDetailPage = React.lazy(() => import('./pages/Companies/CompanyDetail'));
 
-// Lazy-loaded pages (route level code-splitting)
 const LoginPage = React.lazy(() => import('./pages/Login'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const Employees = React.lazy(() => import('./pages/Employees/Employees'));
-const EmployeeForm = React.lazy(() => import('./pages/Employees/EmployeeForm'));
-const Departments = React.lazy(() => import('./pages/Departments/Departments'));
+const SalonApplications = React.lazy(() => import('./pages/SalonApplications/SalonApplications'));
+const Salons = React.lazy(() => import('./pages/Salons/Salons'));
+const ServiceCategories = React.lazy(() => import('./pages/ServiceCategories/ServiceCategories'));
+const Services = React.lazy(() => import('./pages/Services/Services'));
+const Customers = React.lazy(() => import('./pages/Customers/Customers'));
+const Bookings = React.lazy(() => import('./pages/Bookings/Bookings'));
+const Reviews = React.lazy(() => import('./pages/Reviews/Reviews'));
+const Coupons = React.lazy(() => import('./pages/Coupons/Coupons'));
+const PromotionalBanners = React.lazy(() => import('./pages/PromotionalBanners/PromotionalBanners'));
+const PlatformSettings = React.lazy(() => import('./pages/PlatformSettings/PlatformSettings'));
+const AuditLogs = React.lazy(() => import('./pages/AuditLogs/AuditLogs'));
 const Roles = React.lazy(() => import('./pages/RolesAndPermissions/Roles'));
-const AdminsPage = React.lazy(() => import('./pages/Admins/Admins'));
-const VariablesPage = React.lazy(() => import('./pages/Variables/Variables'));
-const MyDetailsPage = React.lazy(() => import('./pages/MyDetails/MyDetails'));
 
 function Spinner() {
   return (
@@ -45,102 +44,24 @@ export default function App() {
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
-        {/* public */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* protected routes */}  
         <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/my-details" element={<MyDetailsPage />} />
 
-          <Route
-            path="/employees"
-            element={
-              <RequirePermission permission="user.read">
-                <EmployeesTableEnhanced />
-              </RequirePermission>
-            }
-          />
-          <Route
-            path="/employees/add-employee"
-            element={
-              <RequirePermission permission="user.create">
-                <EmployeeForm />
-              </RequirePermission>
-            }
-          />
-          <Route
-            path="/employees/:userId/edit"
-            element={
-              <RequirePermission permission="user.update">
-                <EmployeeForm />
-              </RequirePermission>
-            }
-          />
-
-          <Route
-            path="/departments"
-            element={
-              <RequirePermission permission="department.read">
-                <Departments />
-              </RequirePermission>
-            }
-          />
-          <Route
-            path="/companies"
-            element={
-              <RequirePermission permission="company.read">
-                <CompaniesPage />
-              </RequirePermission>
-            }
-          />
-          <Route
-            path="/companies/:companyId"
-            element={
-              <RequirePermission permission="company.read">
-                <CompanyDetailPage />
-              </RequirePermission>
-            }
-          />
-          <Route
-            path="/admins"
-            element={
-              <RequirePermission permission="user.read">
-                <AdminsPage />
-              </RequirePermission>
-            }
-          />
-
-          <Route
-            path="/roles"
-            element={
-              <RequirePermission permission="role.read">
-                <Roles />
-              </RequirePermission>
-            }
-          />
-
-          <Route
-            path="/variables"
-            element={
-              <RequirePermission permission="variables.read">
-                <VariablesPage />
-              </RequirePermission>
-            }
-          />
-
-          <Route
-            path="/company-settings"
-            element={
-              <RequirePermission permission="companySettings.read">
-                <CompanySettingsPage />
-              </RequirePermission>
-            }
-          />
-
-
-
+          <Route path="/salon-applications" element={<RequirePermission permission="salonApplication.read"><SalonApplications /></RequirePermission>} />
+          <Route path="/salons" element={<RequirePermission permission="salon.read"><Salons /></RequirePermission>} />
+          <Route path="/service-categories" element={<RequirePermission permission="serviceCategory.read"><ServiceCategories /></RequirePermission>} />
+          <Route path="/services" element={<RequirePermission permission="service.read"><Services /></RequirePermission>} />
+          <Route path="/customers" element={<RequirePermission permission="customer.read"><Customers /></RequirePermission>} />
+          <Route path="/bookings" element={<RequirePermission permission="booking.read"><Bookings /></RequirePermission>} />
+          <Route path="/reviews" element={<RequirePermission permission="review.read"><Reviews /></RequirePermission>} />
+          <Route path="/coupons" element={<RequirePermission permission="coupon.read"><Coupons /></RequirePermission>} />
+          <Route path="/promotional-banners" element={<RequirePermission permission="banner.read"><PromotionalBanners /></RequirePermission>} />
+          <Route path="/platform-settings" element={<RequirePermission permission="platformSetting.read"><PlatformSettings /></RequirePermission>} />
+          <Route path="/audit-logs" element={<RequirePermission permission="auditLog.read"><AuditLogs /></RequirePermission>} />
+          <Route path="/roles" element={<RequirePermission permission="role.read"><Roles /></RequirePermission>} />
         </Route>
       </Routes>
     </Suspense>

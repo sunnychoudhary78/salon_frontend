@@ -23,7 +23,6 @@ export default function Sidebar() {
   const myPermissions = useSelector(selectMyPermissions) || [];
   // user still available if you want avatar later
   const user = useSelector((state) => state.auth.user) || {};
-  console.log(user);
 
   const userRoles = (() => {
     if (!user) return [];
@@ -59,7 +58,7 @@ export default function Sidebar() {
   // collapsed = icon-only (true) / expanded = descriptive (false)
   const [collapsed, setCollapsed] = useState(() => {
     try {
-      const v = localStorage.getItem("lms_sidebarCollapsed");
+      const v = localStorage.getItem("salon_sidebarCollapsed");
       return v === "true";
     } catch {
       return false;
@@ -69,7 +68,7 @@ export default function Sidebar() {
   // persist collapsed
   useEffect(() => {
     try {
-      localStorage.setItem("lms_sidebarCollapsed", collapsed ? "true" : "false");
+      localStorage.setItem("salon_sidebarCollapsed", collapsed ? "true" : "false");
     } catch { }
   }, [collapsed]);
 
@@ -84,54 +83,77 @@ export default function Sidebar() {
   const menu = [
     {
       key: "home",
-      label: "Home",
+      label: "Dashboard",
       to: "/dashboard",
       icon: <AiOutlineHome className="text-lg" />,
       perms: [],
-      hideForRoles: [],
     },
     {
-      key: "employees",
-      label: "Employees",
-      to: "/employees",
+      key: "salon-mgmt",
+      label: "Salon Management",
+      to: "#",
+      icon: <LuBuilding2 className="text-lg" />,
+      perms: ["salonApplication.read", "salon.read", "serviceCategory.read", "service.read"],
+      subItems: [
+        { key: "salon-apps", label: "Salon Applications", to: "/salon-applications", perms: ["salonApplication.read"] },
+        { key: "salons", label: "Approved Salons", to: "/salons", perms: ["salon.read"] },
+        { key: "categories", label: "Service Categories", to: "/service-categories", perms: ["serviceCategory.read"] },
+        { key: "services", label: "Services", to: "/services", perms: ["service.read"] },
+      ],
+    },
+    {
+      key: "customers",
+      label: "Customers",
+      to: "/customers",
       icon: <LuCircleUser className="text-lg" />,
-      perms: ["user.read"],
-    },
-    // {
-    //   key: "departments",
-    //   label: "Departments",
-    //   to: "/departments",
-    //   icon: <LuLayers className="text-lg" />,
-    //   perms: ["department.read"],
-    // },
-    {
-      key: "companies",
-      label: "Companies",
-      to: "/companies",
-      icon: <LuBuilding2  className="text-lg" />,
-      perms: ["company.read"],
+      perms: ["customer.read"],
     },
     {
-      key: "roles",
-      label: "Roles & Permissions",
-      to: "/roles",
-      icon: <LuShield className="text-lg" />,
-      perms: ["role.read"],
-    },
-    {
-      key: "designations",
-      label: "Variables",
-      to: "/variables",
+      key: "bookings",
+      label: "Bookings",
+      to: "/bookings",
       icon: <LuSettings2 className="text-lg" />,
-      perms: ["variables.read"],
+      perms: ["booking.read"],
     },
-    // {
-    //   key: "company-settings",
-    //   label: "Company Settings",
-    //   to: "/company-settings",
-    //   icon: <LuSettings className="text-lg" />,
-    //   perms: ["companySettings.read"],
-    // },
+    {
+      key: "marketing",
+      label: "Marketing",
+      to: "#",
+      icon: <LuSettings2 className="text-lg" />,
+      perms: ["coupon.read", "banner.read"],
+      subItems: [
+        { key: "coupons", label: "Coupons", to: "/coupons", perms: ["coupon.read"] },
+        { key: "banners", label: "Promotional Banners", to: "/promotional-banners", perms: ["banner.read"] },
+      ],
+    },
+    {
+      key: "reviews",
+      label: "Reviews & Ratings",
+      to: "/reviews",
+      icon: <LuShield className="text-lg" />,
+      perms: ["review.read"],
+    },
+    {
+      key: "access",
+      label: "Access Control",
+      to: "#",
+      icon: <LuShield className="text-lg" />,
+      perms: ["role.read", "permission.read"],
+      subItems: [
+        { key: "roles", label: "Roles & Permissions", to: "/roles", perms: ["role.read"] },
+      ],
+    },
+    {
+      key: "system",
+      label: "System",
+      to: "#",
+      icon: <LuSettings2 className="text-lg" />,
+      perms: ["platformSetting.read", "auditLog.read"],
+      subItems: [
+        { key: "settings", label: "Platform Settings", to: "/platform-settings", perms: ["platformSetting.read"] },
+        { key: "audit", label: "Audit Logs", to: "/audit-logs", perms: ["auditLog.read"] },
+      ],
+    },
   ];
 
   // helper to check active path
@@ -296,7 +318,7 @@ export default function Sidebar() {
                                 }`}
                               aria-hidden
                             >
-                              {m.icon || <CiMail className="text-xl" />}
+                              {m.icon || null}
                             </Link>
                           </TooltipTrigger>
                           <TooltipContent side="right">
@@ -310,15 +332,9 @@ export default function Sidebar() {
                             : 'bg-primary text-white'
                             }`}
                         >
-                          {m.icon || <CiMail className="text-xl" />}
+                          {m.icon || null}
                         </div>
                       )}
-                      {(() => {
-                        const c = m.key === 'leave' ? badgeCounts.leaves : (m.key === 'leave-approval' ? badgeCounts.approvals : 0);
-                        return c > 0 ? (
-                          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-600 ring-2 ring-white" />
-                        ) : null;
-                      })()}
                     </div>
 
                     {/* Link / label area */}
