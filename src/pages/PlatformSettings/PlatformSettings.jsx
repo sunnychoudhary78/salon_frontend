@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import SmsConfigTab from './SmsConfigTab';
+import PremiumBookingTab from './PremiumBookingTab';
 import OtherSettingsTab from './OtherSettingsTab';
 
 const TABS = [
   { id: 'sms', label: 'SMS Config' },
+  { id: 'premium', label: 'Premium Booking' },
   { id: 'other', label: 'Other Settings' },
 ];
 
@@ -38,7 +40,13 @@ export default function PlatformSettingsPage() {
         ))}
       </div>
 
-      {activeTab === 'sms' ? <SmsConfigTab /> : <OtherSettingsTab />}
+      {activeTab === 'sms' ? (
+        <SmsConfigTab />
+      ) : activeTab === 'premium' ? (
+        <PremiumBookingTab />
+      ) : (
+        <OtherSettingsTab />
+      )}
     </div>
   );
 }
