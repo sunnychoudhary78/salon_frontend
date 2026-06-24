@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { login, selectAuth } from '../store/auth/authSlice'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function LoginPage() {
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const location = useLocation()
     const auth = useSelector(selectAuth)
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
 
+    const from = location.state?.from?.pathname || '/dashboard'
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
             await dispatch(login({ email, password })).unwrap()
-            navigate('/dashboard')
+            navigate(from, { replace: true })
         } catch (err) {
             console.error('Login failed', err)
         }
@@ -26,6 +29,10 @@ export default function LoginPage() {
     useEffect(() => {
         document.title = "Login | Immortal LMS";
     }, []);
+
+    if (auth.initialized && auth.user) {
+        return <Navigate to={from} replace />
+    }
 
     return (
         <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-white to-indigo-50 relative overflow-hidden">

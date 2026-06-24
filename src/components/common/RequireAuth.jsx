@@ -1,24 +1,28 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../store/auth/authSlice';
+
+function AuthSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+    </div>
+  );
+}
 
 /**
  * Protects routes that require authentication.
  * Redirects to login if not authenticated, preserving the intended destination.
  */
 export default function RequireAuth({ children }) {
-  const { user, loading, initialized } = useSelector(state => state.auth);
+  const { user, initialized } = useSelector(state => state.auth);
   const location = useLocation();
 
-  // If we're loading or not initialized yet, don't redirect
-  if (loading || !initialized) {
-    return null; // or a loading spinner if you prefer
+  if (!initialized) {
+    return <AuthSpinner />;
   }
 
-  // Only redirect to login if we're sure there's no user after initialization
-  if (!user && initialized) {
-    // Redirect to login but remember where they were trying to go
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

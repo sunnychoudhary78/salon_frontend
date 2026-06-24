@@ -31,13 +31,13 @@ function Spinner() {
 
 export default function App() {
   const dispatch = useDispatch();
-  const { loading, initialized } = useSelector(state => state.auth);
+  const { initialized } = useSelector(state => state.auth);
 
   useEffect(() => {
     dispatch(restoreSession());
   }, [dispatch]);
 
-  if (loading && !initialized) {
+  if (!initialized) {
     return <Spinner />;
   }
 
