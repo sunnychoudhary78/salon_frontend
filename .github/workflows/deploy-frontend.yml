@@ -16,6 +16,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Create .env
+        run: |
+          echo "VITE_BASE_URL=${{ secrets.VITE_BASE_URL }}" > .env
+          echo "VITE_FRONTEND_BASE_PATH=${{ secrets.VITE_FRONTEND_BASE_PATH }}" >> .env
+          echo "VITE_OUT_DIR=${{ secrets.VITE_OUT_DIR }}" >> .env
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
