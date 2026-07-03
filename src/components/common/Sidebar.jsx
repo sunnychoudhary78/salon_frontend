@@ -144,11 +144,24 @@ export default function Sidebar() {
       ],
     },
     {
+      key: "finance",
+      label: "Finance",
+      to: "#",
+      icon: <LuSettings2 className="text-lg" />,
+      perms: ["payment.read", "settlement.read", "payoutAccount.read", "financeSetting.read"],
+      subItems: [
+        { key: "payments", label: "Payments", to: "/payments", perms: ["payment.read"] },
+        { key: "settlement-ledger", label: "Settlement Ledger", to: "/settlement-ledger", perms: ["settlement.read"] },
+        { key: "settlement-batches", label: "Settlement Batches", to: "/settlement-batches", perms: ["settlement.read"] },
+        { key: "payout-accounts", label: "Payout Accounts", to: "/salon-payout-accounts", perms: ["payoutAccount.read"] },
+      ],
+    },
+    {
       key: "system",
       label: "System",
       to: "#",
       icon: <LuSettings2 className="text-lg" />,
-      perms: ["platformSetting.read", "auditLog.read"],
+      perms: ["platformSetting.read", "financeSetting.read", "auditLog.read"],
       subItems: [
         { key: "settings", label: "Platform Settings", to: "/platform-settings", perms: ["platformSetting.read"] },
         { key: "audit", label: "Audit Logs", to: "/audit-logs", perms: ["auditLog.read"] },

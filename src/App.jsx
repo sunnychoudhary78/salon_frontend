@@ -20,6 +20,10 @@ const PromotionalBanners = React.lazy(() => import('./pages/PromotionalBanners/P
 const PlatformSettings = React.lazy(() => import('./pages/PlatformSettings/PlatformSettings'));
 const AuditLogs = React.lazy(() => import('./pages/AuditLogs/AuditLogs'));
 const Roles = React.lazy(() => import('./pages/RolesAndPermissions/Roles'));
+const Payments = React.lazy(() => import('./pages/Payments/Payments'));
+const SettlementLedger = React.lazy(() => import('./pages/Settlements/SettlementLedger'));
+const SettlementBatches = React.lazy(() => import('./pages/Settlements/SettlementBatches'));
+const SalonPayoutAccounts = React.lazy(() => import('./pages/SalonPayoutAccounts/SalonPayoutAccounts'));
 
 function Spinner() {
   return (
@@ -60,6 +64,10 @@ export default function App() {
           <Route path="/coupons" element={<RequirePermission permission="coupon.read"><Coupons /></RequirePermission>} />
           <Route path="/promotional-banners" element={<RequirePermission permission="banner.read"><PromotionalBanners /></RequirePermission>} />
           <Route path="/platform-settings" element={<RequirePermission permission="platformSetting.read"><PlatformSettings /></RequirePermission>} />
+          <Route path="/payments" element={<RequirePermission permission="payment.read"><Payments /></RequirePermission>} />
+          <Route path="/settlement-ledger" element={<RequirePermission permission="settlement.read"><SettlementLedger /></RequirePermission>} />
+          <Route path="/settlement-batches" element={<RequirePermission permission="settlement.read"><SettlementBatches /></RequirePermission>} />
+          <Route path="/salon-payout-accounts" element={<RequirePermission permission="payoutAccount.read"><SalonPayoutAccounts /></RequirePermission>} />
           <Route path="/audit-logs" element={<RequirePermission permission="auditLog.read"><AuditLogs /></RequirePermission>} />
           <Route path="/roles" element={<RequirePermission permission="role.read"><Roles /></RequirePermission>} />
         </Route>

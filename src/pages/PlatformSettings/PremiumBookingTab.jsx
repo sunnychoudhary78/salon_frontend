@@ -80,7 +80,7 @@ export default function PremiumBookingTab() {
           fee: Number(form.fee),
           currency: String(form.currency).trim().toUpperCase(),
         },
-        description: 'Premium urgent booking fee configuration',
+        description: 'Default premium urgent booking fee (salon override fallback)',
       });
       toast.success('Premium booking configuration saved');
       await loadConfig();
@@ -100,7 +100,9 @@ export default function PremiumBookingTab() {
       <div>
         <h2 className="text-lg font-medium">Premium / Urgent Booking</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Configure the fee customers pay to book occupied or blocked time slots urgently.
+          Control whether urgent bookings are enabled platform-wide and set the default fee.
+          Salon owners can set their own fee per salon in the mobile app; salons without a
+          custom fee use this default.
         </p>
       </div>
 
@@ -119,7 +121,7 @@ export default function PremiumBookingTab() {
 
         <div className="space-y-2">
           <Label htmlFor="premium_fee">
-            Premium fee <span className="text-red-500">*</span>
+            Default urgent booking fee <span className="text-red-500">*</span>
           </Label>
           <Input
             id="premium_fee"

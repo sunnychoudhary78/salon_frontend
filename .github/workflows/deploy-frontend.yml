@@ -1,0 +1,51 @@
+name: Deploy Frontend
+
+run-name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Upload Build Files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "/tmp/uat-salon-adminpanel"
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf /var/www/uat_salon_adminpanel_app/uat-salon-adminpanel/*
+            cp -r /tmp/uat-salon-adminpanel/dist/* /var/www/uat_salon_adminpanel_app/uat-salon-adminpanel/
+            chmod -R 755 /var/www/uat_salon_adminpanel_app/uat-salon-adminpanel
+            rm -rf /tmp/uat-salon-adminpanel
+
+            echo "Frontend deployment completed"
