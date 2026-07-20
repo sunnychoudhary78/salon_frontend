@@ -10,48 +10,51 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { selectMyPermissions } from '@/store/permissions/permissionsSlice';
 
 const SMS_CONFIG_KEY = 'sms_config';
+const MSG91_PROVIDER = 'msg91';
 
 const DEFAULT_FORM = {
+  provider: MSG91_PROVIDER,
   enabled: false,
-  sms_url: '',
-  sms_username: '',
-  sms_sendername: '',
-  sms_smstype: 'TRANS',
-  sms_apikey: '',
-  sms_peid: '',
-  sms_templateid: '',
-  sms_message: 'Your OTP for CATCHY is -- Valid for 5 minutes. Do not share this code.',
+  auth_key: '',
+  sender_id: '',
+  template_id: '',
+  message_template: 'Your OTP for CATCHY is --. Valid for 5 minutes. Do not share this code.',
 };
 
 const FIELD_LIMITS = {
-  sms_url: 300,
-  sms_username: 100,
-  sms_sendername: 30,
-  sms_smstype: 20,
-  sms_apikey: 200,
-  sms_peid: 50,
-  sms_templateid: 50,
-  sms_message: 500,
+  auth_key: 200,
+  sender_id: 30,
+  template_id: 50,
+  message_template: 500,
 };
 
 function normalizeSmsConfig(raw) {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_FORM };
+
+  if (raw.provider === MSG91_PROVIDER) {
+    return {
+      provider: MSG91_PROVIDER,
+      enabled: raw.enabled !== false,
+      auth_key: raw.auth_key || '',
+      sender_id: raw.sender_id || '',
+      template_id: raw.template_id || '',
+      message_template: raw.message_template || DEFAULT_FORM.message_template,
+    };
+  }
+
   return {
+    provider: MSG91_PROVIDER,
     enabled: raw.enabled !== false,
-    sms_url: raw.sms_url || '',
-    sms_username: raw.sms_username || '',
-    sms_sendername: raw.sms_sendername || '',
-    sms_smstype: raw.sms_smstype || 'TRANS',
-    sms_apikey: raw.sms_apikey || '',
-    sms_peid: raw.sms_peid || '',
-    sms_templateid: raw.sms_templateid || '',
-    sms_message: raw.sms_message || DEFAULT_FORM.sms_message,
+    auth_key: raw.auth_key || raw.sms_apikey || '',
+    sender_id: raw.sender_id || raw.sms_sendername || '',
+    template_id: raw.template_id || raw.sms_templateid || '',
+    message_template: raw.message_template || raw.sms_message || DEFAULT_FORM.message_template,
   };
 }
 
 function validateForm(form) {
   const errors = {};
-  const required = ['sms_url', 'sms_username', 'sms_sendername', 'sms_smstype', 'sms_apikey', 'sms_message'];
+  const required = ['auth_key', 'sender_id', 'template_id', 'message_template'];
 
   for (const field of required) {
     if (!String(form[field] || '').trim()) {
@@ -66,8 +69,8 @@ function validateForm(form) {
     }
   }
 
-  if (form.sms_message && !form.sms_message.includes('--')) {
-    errors.sms_message = 'Message must include -- as the OTP placeholder';
+  if (form.message_template && !form.message_template.includes('--')) {
+    errors.message_template = 'Message must include -- as the OTP placeholder';
   }
 
   return errors;
@@ -122,17 +125,14 @@ export default function SmsConfigTab() {
     try {
       await api.put(`/platform-settings/${SMS_CONFIG_KEY}`, {
         setting_value: {
+          provider: MSG91_PROVIDER,
           enabled: form.enabled,
-          sms_url: form.sms_url.trim(),
-          sms_username: form.sms_username.trim(),
-          sms_sendername: form.sms_sendername.trim(),
-          sms_smstype: form.sms_smstype.trim(),
-          sms_apikey: form.sms_apikey.trim(),
-          sms_peid: form.sms_peid.trim() || undefined,
-          sms_templateid: form.sms_templateid.trim() || undefined,
-          sms_message: form.sms_message.trim(),
+          auth_key: form.auth_key.trim(),
+          sender_id: form.sender_id.trim(),
+          template_id: form.template_id.trim(),
+          message_template: form.message_template.trim(),
         },
-        description: 'SMS gateway configuration for customer OTP',
+        description: 'SMS gateway configuration for customer OTP (MSG91)',
       });
       toast.success('SMS configuration saved');
       await loadConfig();
@@ -152,7 +152,7 @@ export default function SmsConfigTab() {
       <div>
         <h2 className="text-lg font-medium">SMS Configuration</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Configure the SMS gateway settings for sending customer OTP messages.
+          Configure MSG91 for sending customer OTP messages.
         </p>
       </div>
 
@@ -170,91 +170,64 @@ export default function SmsConfigTab() {
         </div>
 
         <Field
-          label="SMS API URL"
-          required
-          value={form.sms_url}
-          error={errors.sms_url}
-          maxLength={FIELD_LIMITS.sms_url}
-          onChange={(v) => updateField('sms_url', v)}
-          disabled={!canUpdate}
-          placeholder="http://sms.messageindia.in/v2/sendSMS"
+          label="Provider"
+          value="MSG91"
+          disabled
+          hint="SMS delivery provider"
         />
         <Field
-          label="Username"
-          required
-          value={form.sms_username}
-          error={errors.sms_username}
-          maxLength={FIELD_LIMITS.sms_username}
-          onChange={(v) => updateField('sms_username', v)}
-          disabled={!canUpdate}
-        />
-        <Field
-          label="Sender Name"
-          required
-          value={form.sms_sendername}
-          error={errors.sms_sendername}
-          maxLength={FIELD_LIMITS.sms_sendername}
-          onChange={(v) => updateField('sms_sendername', v)}
-          disabled={!canUpdate}
-          placeholder="IMRTPS"
-        />
-        <Field
-          label="SMS Type"
-          required
-          value={form.sms_smstype}
-          error={errors.sms_smstype}
-          maxLength={FIELD_LIMITS.sms_smstype}
-          onChange={(v) => updateField('sms_smstype', v)}
-          disabled={!canUpdate}
-          placeholder="TRANS"
-        />
-        <Field
-          label="API Key"
+          label="Auth Key"
           required
           type="password"
-          value={form.sms_apikey}
-          error={errors.sms_apikey}
-          maxLength={FIELD_LIMITS.sms_apikey}
-          onChange={(v) => updateField('sms_apikey', v)}
+          value={form.auth_key}
+          error={errors.auth_key}
+          maxLength={FIELD_LIMITS.auth_key}
+          onChange={(v) => updateField('auth_key', v)}
           disabled={!canUpdate}
+          hint="MSG91 authentication key (authkey header)"
         />
         <Field
-          label="PEID"
-          value={form.sms_peid}
-          error={errors.sms_peid}
-          maxLength={FIELD_LIMITS.sms_peid}
-          onChange={(v) => updateField('sms_peid', v)}
+          label="Sender ID"
+          required
+          value={form.sender_id}
+          error={errors.sender_id}
+          maxLength={FIELD_LIMITS.sender_id}
+          onChange={(v) => updateField('sender_id', v)}
           disabled={!canUpdate}
-          hint="DLT Principal Entity ID (optional)"
+          placeholder="CATCHY"
+          hint="Must match the sender ID registered in your MSG91 OTP template"
         />
         <Field
           label="Template ID"
-          value={form.sms_templateid}
-          error={errors.sms_templateid}
-          maxLength={FIELD_LIMITS.sms_templateid}
-          onChange={(v) => updateField('sms_templateid', v)}
+          required
+          value={form.template_id}
+          error={errors.template_id}
+          maxLength={FIELD_LIMITS.template_id}
+          onChange={(v) => updateField('template_id', v)}
           disabled={!canUpdate}
-          hint="DLT Template ID (recommended for India)"
+          hint="MSG91 OTP template ID from your MSG91 panel"
         />
 
         <div className="space-y-2">
-          <Label htmlFor="sms_message">
+          <Label htmlFor="message_template">
             Message Template <span className="text-red-500">*</span>
           </Label>
           <Textarea
-            id="sms_message"
-            value={form.sms_message}
-            maxLength={FIELD_LIMITS.sms_message}
+            id="message_template"
+            value={form.message_template}
+            maxLength={FIELD_LIMITS.message_template}
             rows={4}
             disabled={!canUpdate}
-            onChange={(e) => updateField('sms_message', e.target.value)}
-            placeholder="Your OTP for CATCHY is -- Valid for 5 minutes."
+            onChange={(e) => updateField('message_template', e.target.value)}
+            placeholder="Your OTP for CATCHY is --. Valid for 5 minutes."
           />
-          {errors.sms_message && (
-            <p className="text-xs text-red-600">{errors.sms_message}</p>
+          {errors.message_template && (
+            <p className="text-xs text-red-600">{errors.message_template}</p>
           )}
           <p className="text-xs text-gray-500">
-            Use <code className="bg-gray-100 px-1 rounded">--</code> in the message where the OTP should appear.
+            Use <code className="bg-gray-100 px-1 rounded">--</code> where the OTP should appear.
+            This must match your MSG91 OTP template (use <code className="bg-gray-100 px-1 rounded">##OTP##</code> in the MSG91 panel).
+            Used for reference and validation only — the SMS text is sent from your MSG91 template.
           </p>
         </div>
       </div>
@@ -298,7 +271,8 @@ function Field({
         maxLength={maxLength}
         placeholder={placeholder}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        readOnly={!onChange}
       />
       {hint && <p className="text-xs text-gray-500">{hint}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
