@@ -1,28 +1,42 @@
-import React, { useEffect, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import RequirePermission from './components/common/RequirePermission';
-import RequireAuth from './components/common/RequireAuth';
-import AppLayout from './components/common/AppLayout';
-import { useDispatch, useSelector } from 'react-redux';
-import { restoreSession } from './store/auth/authSlice';
+import React, { useEffect, Suspense } from "react";
+import { Routes, Route } from "react-router-dom";
+import RequirePermission from "./components/common/RequirePermission";
+import RequireAuth from "./components/common/RequireAuth";
+import AppLayout from "./components/common/AppLayout";
+import { useDispatch, useSelector } from "react-redux";
+import { restoreSession } from "./store/auth/authSlice";
 
-const LoginPage = React.lazy(() => import('./pages/Login'));
-const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const SalonApplications = React.lazy(() => import('./pages/SalonApplications/SalonApplications'));
-const Salons = React.lazy(() => import('./pages/Salons/Salons'));
-const Services = React.lazy(() => import('./pages/Services/Services'));
-const Customers = React.lazy(() => import('./pages/Customers/Customers'));
-const Bookings = React.lazy(() => import('./pages/Bookings/Bookings'));
-const Reviews = React.lazy(() => import('./pages/Reviews/Reviews'));
-const Coupons = React.lazy(() => import('./pages/Coupons/Coupons'));
-const PromotionalBanners = React.lazy(() => import('./pages/PromotionalBanners/PromotionalBanners'));
-const PlatformSettings = React.lazy(() => import('./pages/PlatformSettings/PlatformSettings'));
-const AuditLogs = React.lazy(() => import('./pages/AuditLogs/AuditLogs'));
-const Roles = React.lazy(() => import('./pages/RolesAndPermissions/Roles'));
-const Payments = React.lazy(() => import('./pages/Payments/Payments'));
-const SettlementLedger = React.lazy(() => import('./pages/Settlements/SettlementLedger'));
-const SettlementBatches = React.lazy(() => import('./pages/Settlements/SettlementBatches'));
-const SalonPayoutAccounts = React.lazy(() => import('./pages/SalonPayoutAccounts/SalonPayoutAccounts'));
+const LoginPage = React.lazy(() => import("./pages/Login"));
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const SalonApplications = React.lazy(
+  () => import("./pages/SalonApplications/SalonApplications"),
+);
+const Salons = React.lazy(() => import("./pages/Salons/Salons"));
+const Services = React.lazy(() => import("./pages/Services/Services"));
+const Customers = React.lazy(() => import("./pages/Customers/Customers"));
+const Bookings = React.lazy(() => import("./pages/Bookings/Bookings"));
+const Reviews = React.lazy(() => import("./pages/Reviews/Reviews"));
+const Coupons = React.lazy(() => import("./pages/Coupons/Coupons"));
+const PromotionalBanners = React.lazy(
+  () => import("./pages/PromotionalBanners/PromotionalBanners"),
+);
+const PlatformSettings = React.lazy(
+  () => import("./pages/PlatformSettings/PlatformSettings"),
+);
+const AuditLogs = React.lazy(() => import("./pages/AuditLogs/AuditLogs"));
+const Roles = React.lazy(() => import("./pages/RolesAndPermissions/Roles"));
+const Payments = React.lazy(() => import("./pages/Payments/Payments"));
+const SettlementLedger = React.lazy(
+  () => import("./pages/Settlements/SettlementLedger"),
+);
+const SettlementBatches = React.lazy(
+  () => import("./pages/Settlements/SettlementBatches"),
+);
+const SalonPayoutAccounts = React.lazy(
+  () => import("./pages/SalonPayoutAccounts/SalonPayoutAccounts"),
+);
+
+//test
 
 function Spinner() {
   return (
@@ -34,7 +48,7 @@ function Spinner() {
 
 export default function App() {
   const dispatch = useDispatch();
-  const { initialized } = useSelector(state => state.auth);
+  const { initialized } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(restoreSession());
@@ -49,25 +63,136 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
 
-        <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
+        <Route
+          element={
+            <RequireAuth>
+              <AppLayout />
+            </RequireAuth>
+          }
+        >
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
 
-          <Route path="/salon-applications" element={<RequirePermission permission="salonApplication.read"><SalonApplications /></RequirePermission>} />
-          <Route path="/salons" element={<RequirePermission permission="salon.read"><Salons /></RequirePermission>} />
-          <Route path="/services" element={<RequirePermission permission="service.read"><Services /></RequirePermission>} />
-          <Route path="/customers" element={<RequirePermission permission="customer.read"><Customers /></RequirePermission>} />
-          <Route path="/bookings" element={<RequirePermission permission="booking.read"><Bookings /></RequirePermission>} />
-          <Route path="/reviews" element={<RequirePermission permission="review.read"><Reviews /></RequirePermission>} />
-          <Route path="/coupons" element={<RequirePermission permission="coupon.read"><Coupons /></RequirePermission>} />
-          <Route path="/promotional-banners" element={<RequirePermission permission="banner.read"><PromotionalBanners /></RequirePermission>} />
-          <Route path="/platform-settings" element={<RequirePermission permission="platformSetting.read"><PlatformSettings /></RequirePermission>} />
-          <Route path="/payments" element={<RequirePermission permission="payment.read"><Payments /></RequirePermission>} />
-          <Route path="/settlement-ledger" element={<RequirePermission permission="settlement.read"><SettlementLedger /></RequirePermission>} />
-          <Route path="/settlement-batches" element={<RequirePermission permission="settlement.read"><SettlementBatches /></RequirePermission>} />
-          <Route path="/salon-payout-accounts" element={<RequirePermission permission="payoutAccount.read"><SalonPayoutAccounts /></RequirePermission>} />
-          <Route path="/audit-logs" element={<RequirePermission permission="auditLog.read"><AuditLogs /></RequirePermission>} />
-          <Route path="/roles" element={<RequirePermission permission="role.read"><Roles /></RequirePermission>} />
+          <Route
+            path="/salon-applications"
+            element={
+              <RequirePermission permission="salonApplication.read">
+                <SalonApplications />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/salons"
+            element={
+              <RequirePermission permission="salon.read">
+                <Salons />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/services"
+            element={
+              <RequirePermission permission="service.read">
+                <Services />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/customers"
+            element={
+              <RequirePermission permission="customer.read">
+                <Customers />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <RequirePermission permission="booking.read">
+                <Bookings />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/reviews"
+            element={
+              <RequirePermission permission="review.read">
+                <Reviews />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/coupons"
+            element={
+              <RequirePermission permission="coupon.read">
+                <Coupons />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/promotional-banners"
+            element={
+              <RequirePermission permission="banner.read">
+                <PromotionalBanners />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/platform-settings"
+            element={
+              <RequirePermission permission="platformSetting.read">
+                <PlatformSettings />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/payments"
+            element={
+              <RequirePermission permission="payment.read">
+                <Payments />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/settlement-ledger"
+            element={
+              <RequirePermission permission="settlement.read">
+                <SettlementLedger />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/settlement-batches"
+            element={
+              <RequirePermission permission="settlement.read">
+                <SettlementBatches />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/salon-payout-accounts"
+            element={
+              <RequirePermission permission="payoutAccount.read">
+                <SalonPayoutAccounts />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/audit-logs"
+            element={
+              <RequirePermission permission="auditLog.read">
+                <AuditLogs />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/roles"
+            element={
+              <RequirePermission permission="role.read">
+                <Roles />
+              </RequirePermission>
+            }
+          />
         </Route>
       </Routes>
     </Suspense>
