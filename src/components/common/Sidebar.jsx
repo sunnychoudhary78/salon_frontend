@@ -14,7 +14,6 @@ import {
   Settings2 as LuSettings2, 
   Building2 as LuBuilding2
 } from "lucide-react";
-import api from "@/api/axios";
 import { appConfig } from "@/config/appConfig";
 
 export default function Sidebar() {
@@ -69,7 +68,9 @@ export default function Sidebar() {
   useEffect(() => {
     try {
       localStorage.setItem("salon_sidebarCollapsed", collapsed ? "true" : "false");
-    } catch { }
+    } catch {
+      // Ignore unavailable local storage.
+    }
   }, [collapsed]);
 
   // convenience permission check
@@ -93,11 +94,10 @@ export default function Sidebar() {
       label: "Salon Management",
       to: "#",
       icon: <LuBuilding2 className="text-lg" />,
-      perms: ["salonApplication.read", "salon.read", "serviceCategory.read", "service.read"],
+      perms: ["salonApplication.read", "salon.read", "service.read"],
       subItems: [
         { key: "salon-apps", label: "Salon Applications", to: "/salon-applications", perms: ["salonApplication.read"] },
         { key: "salons", label: "Approved Salons", to: "/salons", perms: ["salon.read"] },
-        { key: "categories", label: "Service Categories", to: "/service-categories", perms: ["serviceCategory.read"] },
         { key: "services", label: "Services", to: "/services", perms: ["service.read"] },
       ],
     },

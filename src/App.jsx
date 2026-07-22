@@ -10,7 +10,6 @@ const LoginPage = React.lazy(() => import('./pages/Login'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const SalonApplications = React.lazy(() => import('./pages/SalonApplications/SalonApplications'));
 const Salons = React.lazy(() => import('./pages/Salons/Salons'));
-const ServiceCategories = React.lazy(() => import('./pages/ServiceCategories/ServiceCategories'));
 const Services = React.lazy(() => import('./pages/Services/Services'));
 const Customers = React.lazy(() => import('./pages/Customers/Customers'));
 const Bookings = React.lazy(() => import('./pages/Bookings/Bookings'));
@@ -56,7 +55,6 @@ export default function App() {
 
           <Route path="/salon-applications" element={<RequirePermission permission="salonApplication.read"><SalonApplications /></RequirePermission>} />
           <Route path="/salons" element={<RequirePermission permission="salon.read"><Salons /></RequirePermission>} />
-          <Route path="/service-categories" element={<RequirePermission permission="serviceCategory.read"><ServiceCategories /></RequirePermission>} />
           <Route path="/services" element={<RequirePermission permission="service.read"><Services /></RequirePermission>} />
           <Route path="/customers" element={<RequirePermission permission="customer.read"><Customers /></RequirePermission>} />
           <Route path="/bookings" element={<RequirePermission permission="booking.read"><Bookings /></RequirePermission>} />
