@@ -11,25 +11,30 @@ import { selectMyPermissions } from '@/store/permissions/permissionsSlice';
 
 const SMS_CONFIG_KEY = 'sms_config';
 const MSG91_PROVIDER = 'msg91';
+const DEFAULT_OTP_VAR_NAME = 'OTP';
 
 const DEFAULT_FORM = {
   provider: MSG91_PROVIDER,
   enabled: false,
   auth_key: '',
   sender_id: '',
-  template_id: '',
+  flow_id: '',
+  otp_var_name: DEFAULT_OTP_VAR_NAME,
   message_template: 'Your OTP for CATCHY is --. Valid for 5 minutes. Do not share this code.',
 };
 
 const FIELD_LIMITS = {
   auth_key: 200,
   sender_id: 30,
-  template_id: 50,
+  flow_id: 50,
+  otp_var_name: 40,
   message_template: 500,
 };
 
 function normalizeSmsConfig(raw) {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_FORM };
+
+  const flowId = raw.flow_id || raw.template_id || raw.sms_templateid || '';
 
   if (raw.provider === MSG91_PROVIDER) {
     return {
@@ -37,7 +42,8 @@ function normalizeSmsConfig(raw) {
       enabled: raw.enabled !== false,
       auth_key: raw.auth_key || '',
       sender_id: raw.sender_id || '',
-      template_id: raw.template_id || '',
+      flow_id: flowId,
+      otp_var_name: raw.otp_var_name || DEFAULT_OTP_VAR_NAME,
       message_template: raw.message_template || DEFAULT_FORM.message_template,
     };
   }
@@ -47,14 +53,15 @@ function normalizeSmsConfig(raw) {
     enabled: raw.enabled !== false,
     auth_key: raw.auth_key || raw.sms_apikey || '',
     sender_id: raw.sender_id || raw.sms_sendername || '',
-    template_id: raw.template_id || raw.sms_templateid || '',
+    flow_id: flowId,
+    otp_var_name: raw.otp_var_name || DEFAULT_OTP_VAR_NAME,
     message_template: raw.message_template || raw.sms_message || DEFAULT_FORM.message_template,
   };
 }
 
 function validateForm(form) {
   const errors = {};
-  const required = ['auth_key', 'sender_id', 'template_id', 'message_template'];
+  const required = ['auth_key', 'sender_id', 'flow_id', 'otp_var_name', 'message_template'];
 
   for (const field of required) {
     if (!String(form[field] || '').trim()) {
@@ -123,16 +130,21 @@ export default function SmsConfigTab() {
 
     setSaving(true);
     try {
+      const flowId = form.flow_id.trim();
       await api.put(`/platform-settings/${SMS_CONFIG_KEY}`, {
         setting_value: {
           provider: MSG91_PROVIDER,
           enabled: form.enabled,
           auth_key: form.auth_key.trim(),
           sender_id: form.sender_id.trim(),
-          template_id: form.template_id.trim(),
+          flow_id: flowId,
+          // Legacy alias so older readers still resolve the Flow ID
+          template_id: flowId,
+          otp_var_name: form.otp_var_name.trim() || DEFAULT_OTP_VAR_NAME,
           message_template: form.message_template.trim(),
         },
-        description: 'SMS gateway configuration for customer OTP (MSG91)',
+        description:
+          'SMS gateway configuration for customer OTP via MSG91 Flow/OneAPI (DLT SMS templates)',
       });
       toast.success('SMS configuration saved');
       await loadConfig();
@@ -152,7 +164,8 @@ export default function SmsConfigTab() {
       <div>
         <h2 className="text-lg font-medium">SMS Configuration</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Configure MSG91 for sending customer OTP messages.
+          Configure MSG91 Flow/OneAPI for customer OTP SMS (same templates as Test DLT).
+          Use the MSG91 SMS Template / Flow ID — not the DLT TE ID.
         </p>
       </div>
 
@@ -171,9 +184,9 @@ export default function SmsConfigTab() {
 
         <Field
           label="Provider"
-          value="MSG91"
+          value="MSG91 (Flow / OneAPI)"
           disabled
-          hint="SMS delivery provider"
+          hint="Sends via POST /api/v5/flow — matches DLT SMS templates"
         />
         <Field
           label="Auth Key"
@@ -195,17 +208,28 @@ export default function SmsConfigTab() {
           onChange={(v) => updateField('sender_id', v)}
           disabled={!canUpdate}
           placeholder="CATCHY"
-          hint="Must match the sender ID registered in your MSG91 OTP template"
+          hint="Sent as sender in the Flow API. Must match the DLT-approved header mapped on your MSG91 SMS template."
         />
         <Field
-          label="Template ID"
+          label="Flow / SMS Template ID"
           required
-          value={form.template_id}
-          error={errors.template_id}
-          maxLength={FIELD_LIMITS.template_id}
-          onChange={(v) => updateField('template_id', v)}
+          value={form.flow_id}
+          error={errors.flow_id}
+          maxLength={FIELD_LIMITS.flow_id}
+          onChange={(v) => updateField('flow_id', v)}
           disabled={!canUpdate}
-          hint="MSG91 OTP template ID from your MSG91 panel"
+          hint="Copy from MSG91 SMS → Templates (the ID used by Test DLT). Do not paste the DLT TE ID or an OTP-section template ID."
+        />
+        <Field
+          label="OTP Variable Name"
+          required
+          value={form.otp_var_name}
+          error={errors.otp_var_name}
+          maxLength={FIELD_LIMITS.otp_var_name}
+          onChange={(v) => updateField('otp_var_name', v)}
+          disabled={!canUpdate}
+          placeholder="OTP"
+          hint="Must match the variable in your MSG91 flow (e.g. OTP for ##OTP##, or VAR1 for ##VAR1##)."
         />
 
         <div className="space-y-2">
@@ -226,8 +250,8 @@ export default function SmsConfigTab() {
           )}
           <p className="text-xs text-gray-500">
             Use <code className="bg-gray-100 px-1 rounded">--</code> where the OTP should appear.
-            This must match your MSG91 OTP template (use <code className="bg-gray-100 px-1 rounded">##OTP##</code> in the MSG91 panel).
-            Used for reference and validation only — the SMS text is sent from your MSG91 template.
+            Reference/preview only — the SMS text is sent from your MSG91 Flow template (DLT-approved content).
+            In MSG91 use <code className="bg-gray-100 px-1 rounded">##OTP##</code> (or your configured variable) matching the OTP Variable Name above.
           </p>
         </div>
       </div>
