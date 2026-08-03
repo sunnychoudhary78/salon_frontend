@@ -20,6 +20,14 @@ export default function CustomersPage() {
               refresh();
             } catch (e) { toast.error(e?.response?.data?.message || 'Failed'); }
           }}>Block</Button>
+        ) : row.status === 'BLOCKED' ? (
+          <Button size="sm" variant="outline" onClick={async () => {
+            try {
+              await api.patch(`/customers/${row.id}/unblock`);
+              toast.success('Customer unblocked');
+              refresh();
+            } catch (e) { toast.error(e?.response?.data?.message || 'Failed'); }
+          }}>Unblock</Button>
         ) : null
       }
     />
