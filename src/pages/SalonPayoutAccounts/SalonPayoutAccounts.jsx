@@ -1,57 +1,47 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
+import AdminQueryPage from '@/components/common/AdminQueryPage';
+import { Button } from '@/components/ui/button';
 import api from '@/api/axios';
 import toast from 'react-hot-toast';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function SalonPayoutAccountsPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const handleApprove = async (row, refresh) => {
     try {
-      const res = await api.post('/salon-payout-accounts/query', { page: 1, limit: 50 });
-      setRows(res.data.rows || []);
-    } catch {
-      toast.error('Failed to load payout accounts');
-    } finally {
-      setLoading(false);
+      await api.post(`/salon-payout-accounts/${row.id}/approve`);
+      toast.success('Payout account approved');
+      refresh();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || 'Failed to approve');
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const handleReject = async (row, refresh) => {
+    if (!window.confirm('Reject this payout account? The salon owner will need to update their bank details.')) {
+      return;
+    }
+    try {
+      await api.post(`/salon-payout-accounts/${row.id}/reject`);
+      toast.success('Payout account rejected');
+      refresh();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || 'Failed to reject');
+    }
+  };
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Salon Payout Accounts</h1>
-      <Button onClick={fetchData}>Refresh</Button>
-      {loading ? <p>Loading...</p> : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Owner</TableHead>
-              <TableHead>Holder</TableHead>
-              <TableHead>IFSC</TableHead>
-              <TableHead>Account</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>{row.owner?.user?.name || row.salon_owner_id}</TableCell>
-                <TableCell>{row.account_holder_name}</TableCell>
-                <TableCell>{row.ifsc_code}</TableCell>
-                <TableCell>{row.account_number_masked}</TableCell>
-                <TableCell>{row.verification_status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </div>
+    <AdminQueryPage
+      title="Salon Payout Accounts"
+      endpoint="/salon-payout-accounts"
+      statusFilter="verification_status"
+      statusOptions={['PENDING', 'VERIFIED', 'REJECTED']}
+      renderActions={(row, refresh) =>
+        row.verification_status === 'PENDING' ? (
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => handleApprove(row, refresh)}>Approve</Button>
+            <Button size="sm" variant="destructive" onClick={() => handleReject(row, refresh)}>Reject</Button>
+          </div>
+        ) : null
+      }
+    />
   );
 }
