@@ -537,6 +537,12 @@ export default function AdminQueryPage({
   onRowClick,
   statusFilter,
   statusOptions = [],
+  // Optional request-type filter. When provided, it is rendered
+  // INSIDE the same page-header card instead of above the card.
+  requestTypeFilter = null,
+  requestTypeOptions = [],
+  requestTypeValue,
+  onRequestTypeChange,
 }) {
   /* ==========================================================
      EXISTING STATE
@@ -561,6 +567,14 @@ export default function AdminQueryPage({
   const [filterStatus, setFilterStatus] =
     useState("");
 
+  const [internalRequestType, setInternalRequestType] =
+    useState("");
+
+  const activeRequestType =
+    requestTypeValue !== undefined
+      ? requestTypeValue
+      : internalRequestType;
+
   const [loading, setLoading] =
     useState(true);
 
@@ -580,10 +594,16 @@ export default function AdminQueryPage({
   const filterStatusRef =
     useRef(filterStatus);
 
+  const requestTypeRef =
+    useRef(activeRequestType);
+
   searchRef.current = search;
 
   filterStatusRef.current =
     filterStatus;
+
+  requestTypeRef.current =
+    activeRequestType;
 
   /* ==========================================================
      EXISTING FETCH LOGIC
@@ -613,6 +633,11 @@ export default function AdminQueryPage({
           ? overrides.filterStatus
           : filterStatusRef.current;
 
+      const activeRequestType =
+        overrides.requestType !== undefined
+          ? overrides.requestType
+          : requestTypeRef.current;
+
       try {
         const body = {
           page,
@@ -628,6 +653,14 @@ export default function AdminQueryPage({
         ) {
           body[statusFilter] =
             activeFilterStatus;
+        }
+
+        if (
+          requestTypeFilter &&
+          activeRequestType
+        ) {
+          body[requestTypeFilter] =
+            activeRequestType;
         }
 
         const res =
@@ -669,6 +702,7 @@ export default function AdminQueryPage({
       endpoint,
       extraFilters,
       statusFilter,
+      requestTypeFilter,
     ]
   );
 
@@ -711,6 +745,26 @@ export default function AdminQueryPage({
 
     fetchData(1, {
       filterStatus: value,
+    });
+  };
+
+  /* ============================================================
+     REQUEST TYPE FILTER
+     Rendered inside the same header card.
+     ============================================================ */
+
+  const handleRequestTypeChange = (
+    value
+  ) => {
+    setInternalRequestType(value);
+
+    requestTypeRef.current =
+      value;
+
+    onRequestTypeChange?.(value);
+
+    fetchData(1, {
+      requestType: value,
     });
   };
 
@@ -830,8 +884,75 @@ export default function AdminQueryPage({
               sm:flex-row
               sm:items-center
               lg:w-auto
+              lg:flex-wrap
+              lg:justify-end
             "
           >
+            {/* Request type */}
+            {requestTypeOptions.length > 0 && (
+              <div className="relative shrink-0">
+                <select
+                  aria-label="Request type"
+                  className="
+                    h-9.5
+                    min-w-[125px]
+                    appearance-none
+                    rounded-[10px]
+                    border
+                    border-slate-200
+                    bg-slate-50
+                    px-3
+                    pr-8
+                    text-[11px]
+                    font-medium
+                    text-slate-700
+                    shadow-none
+                    outline-none
+                    transition
+                    focus:border-indigo-200
+                    focus:bg-white
+                    focus:ring-2
+                    focus:ring-indigo-100
+                  "
+                  value={activeRequestType}
+                  onChange={(e) =>
+                    handleRequestTypeChange(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">
+                    All types
+                  </option>
+
+                  {requestTypeOptions.map((type) => (
+                    <option
+                      key={type}
+                      value={type}
+                    >
+                      {String(type).replace(
+                        /_/g,
+                        " "
+                      )}
+                    </option>
+                  ))}
+                </select>
+
+                <span
+                  className="
+                    pointer-events-none
+                    absolute
+                    right-2.5
+                    top-1/2
+                    -translate-y-1/2
+                    text-slate-400
+                  "
+                >
+                  ▾
+                </span>
+              </div>
+            )}
+
             {/* Search input */}
             <div
               className="
