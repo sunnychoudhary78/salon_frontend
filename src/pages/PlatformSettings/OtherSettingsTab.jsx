@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const SMS_CONFIG_KEY = 'sms_config';
+const HIDDEN_SETTING_KEYS = ['sms_config', 'otp_usage_config'];
 
 export default function OtherSettingsTab() {
   const [settings, setSettings] = useState([]);
@@ -15,7 +15,9 @@ export default function OtherSettingsTab() {
     setLoading(true);
     try {
       const res = await api.get('/platform-settings');
-      const rows = (res.data.data || []).filter((s) => s.setting_key !== SMS_CONFIG_KEY);
+      const rows = (res.data.data || []).filter(
+        (s) => !HIDDEN_SETTING_KEYS.includes(s.setting_key),
+      );
       setSettings(rows);
     } catch {
       toast.error('Failed to load settings');

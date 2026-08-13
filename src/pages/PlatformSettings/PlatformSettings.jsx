@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import SmsConfigTab from './SmsConfigTab';
+import OtpUsageTab from './OtpUsageTab';
 import PremiumBookingTab from './PremiumBookingTab';
 import FinanceSettingsTab from './FinanceSettingsTab';
 import OtherSettingsTab from './OtherSettingsTab';
 
 const TABS = [
   { id: 'sms', label: 'SMS Config' },
+  { id: 'otp', label: 'OTP Usage' },
   { id: 'premium', label: 'Premium Booking' },
   { id: 'finance', label: 'Finance Settings' },
   { id: 'other', label: 'Other Settings' },
@@ -44,6 +46,8 @@ export default function PlatformSettingsPage() {
 
       {activeTab === 'sms' ? (
         <SmsConfigTab />
+      ) : activeTab === 'otp' ? (
+        <OtpUsageTab />
       ) : activeTab === 'premium' ? (
         <PremiumBookingTab />
       ) : activeTab === 'finance' ? (
