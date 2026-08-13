@@ -795,58 +795,134 @@ export default function Roles() {
   };
 
   const HeaderBar = ({ columns, query, onQueryChange, showColumnSearch, onToggleColumnSearch, onApplyAdvanced, onRemoveColumnFilter, onClearAll, columnFilters, advancedFilters, rightActions, tabsNode }) => (
-    <div className="sticky top-0 z-20 bg-white ">
-      <div className="p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-4">
-          <FiltersPanel columns={columns} onApply={onApplyAdvanced} onSave={() => { }} />
-          <Button variant="ghost" size="icon" aria-label="Toggle column search" onClick={onToggleColumnSearch}>
-            <FiSearch />
-          </Button>
+    <div className="mb-4 rounded-2xl border border-slate-200 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
+      <div className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+              <FiShield className="h-4 w-4" />
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-sm font-semibold text-slate-900">
+                {tab === "roles" ? "Roles" : "Permissions"}
+              </div>
+              <div className="text-[11px] text-slate-500">
+                Manage access and platform permissions
+              </div>
+            </div>
+          </div>
+
+          <div className="h-7 w-px bg-slate-200" />
+
           {tabsNode}
+
+          <FiltersPanel columns={columns} onApply={onApplyAdvanced} onSave={() => { }} />
+
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Toggle column search"
+            onClick={onToggleColumnSearch}
+            className="h-9 w-9 rounded-lg border-slate-200 text-slate-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
+          >
+            <FiSearch className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="flex shrink-0 items-center gap-2">
           {rightActions}
-          <TableConfigPanel tableKey={tab === 'roles' ? 'roles' : 'permissions'} onSaved={() => { if (tab === 'roles') loadRolesTableConfig(); else loadPermsTableConfig(); }} />
+          <TableConfigPanel
+            tableKey={tab === 'roles' ? 'roles' : 'permissions'}
+            onSaved={() => { if (tab === 'roles') loadRolesTableConfig(); else loadPermsTableConfig(); }}
+          />
         </div>
       </div>
-      <div className="p-2 bg-white">
-        <FilterChips columnFilters={columnFilters} advancedFilters={advancedFilters} onRemoveColumnFilter={onRemoveColumnFilter} onClearAll={onClearAll} />
-      </div>
+
+      {(Object.keys(columnFilters || {}).length > 0 || (advancedFilters || []).length > 0) && (
+        <div className="border-t border-slate-100 px-4 py-2">
+          <FilterChips
+            columnFilters={columnFilters}
+            advancedFilters={advancedFilters}
+            onRemoveColumnFilter={onRemoveColumnFilter}
+            onClearAll={onClearAll}
+          />
+        </div>
+      )}
     </div>
   );
 
   const FooterBar = ({ meta, page, limit, onChangeLimit, onChangePage }) => (
-    <div className="sticky bottom-0 z-20 p-4 bg-white  flex items-center justify-between">
-      <div className="text-sm text-gray-600">
-        {meta.total > 0 ? `Showing page ${meta.page} of ${meta.totalPages} — ${meta.total} total` : "No records"}
+    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-[0_2px_10px_rgba(15,23,42,0.03)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="text-xs text-slate-500">
+        {meta.total > 0
+          ? `Showing page ${meta.page} of ${meta.totalPages} · ${meta.total} total`
+          : "No records"}
       </div>
+
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2"><label>Per page:</label>
-          <select value={String(limit)} onChange={e => { const v = Number(e.target.value); onChangeLimit(v); onChangePage(1); }} className="border rounded px-2 py-1">
-            {[5, 10, 20, 25, 50, 100].map(n => (<option key={n} value={String(n)}>{n}</option>))}
-          </select>
+        <label className="text-xs text-slate-500">Per page</label>
+        <select
+          value={String(limit)}
+          onChange={e => {
+            const v = Number(e.target.value);
+            onChangeLimit(v);
+            onChangePage(1);
+          }}
+          className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+        >
+          {[5, 10, 20, 25, 50, 100].map(n => (
+            <option key={n} value={String(n)}>{n}</option>
+          ))}
+        </select>
+
+        <Button
+          variant="outline"
+          className="h-8 rounded-lg border-slate-200 px-3 text-xs"
+          onClick={() => onChangePage(Math.max(1, page - 1))}
+          disabled={page <= 1}
+        >
+          Previous
+        </Button>
+
+        <div className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-violet-50 px-2 text-xs font-semibold text-violet-700">
+          {page}
         </div>
-        <Button onClick={() => { const np = Math.max(1, page - 1); onChangePage(np); }} disabled={page <= 1}>Prev</Button>
-        <div className="text-sm px-3">{page}</div>
-        <Button onClick={() => { const np = meta.page < meta.totalPages ? page + 1 : page; onChangePage(np); }} disabled={page >= meta.totalPages}>Next</Button>
+
+        <Button
+          variant="outline"
+          className="h-8 rounded-lg border-slate-200 px-3 text-xs"
+          onClick={() => onChangePage(meta.page < meta.totalPages ? page + 1 : page)}
+          disabled={page >= meta.totalPages}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );
 
 
   const tabsNode = (
-    <div className="rounded bg-gray-50 border overflow-hidden">
+    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1">
       <RequirePermission permission="role.read">
         <button
-          className={`px-4 py-1.5 cursor-pointer ${tab === "roles" ? "bg-white font-medium" : "text-gray-600"}`}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            tab === "roles"
+              ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
           onClick={() => setTab("roles")}
         >
           Roles
         </button>
       </RequirePermission>
+
       <RequirePermission permission="permission.read">
         <button
-          className={`px-4 py-1.5 cursor-pointer ${tab === "permissions" ? "bg-white font-medium" : "text-gray-600"}`}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            tab === "permissions"
+              ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
           onClick={() => setTab("permissions")}
         >
           Permissions
@@ -898,7 +974,7 @@ export default function Roles() {
   useEffect(() => { loadRolesTableConfig(); loadPermsTableConfig(); }, []);
 
   return (
-    <div className="ml-4 h-screen flex flex-col">
+    <div className="min-h-screen bg-[#f7f8fc] px-4 py-4 text-slate-900">
 
 
       {/* Roles Tab */}
@@ -919,25 +995,25 @@ export default function Roles() {
               tabsNode={tabsNode}
               rightActions={
                 <RequirePermission permission="role.create">
-                  <Button onClick={openCreateRole} className="flex items-center gap-2"><FiPlus /> Add Role</Button>
+                  <Button onClick={openCreateRole} className="h-9 rounded-lg bg-violet-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-violet-700"><FiPlus className="mr-1 h-4 w-4" /> Add Role</Button>
                 </RequirePermission>
               }
             />
 
-            <div className="flex-1 bg-white flex flex-col min-h-0">
-              <div className="border rounded flex-1 min-h-0">
-                <div className='relative flex-1 min-h-0 overflow-x-auto overflow-y-auto'>
-                  <Table className="min-w-max">
-                    <TableHeader className="sticky top-0 z-30 bg-white">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
+              <div className="overflow-hidden rounded-2xl">
+                <div className='relative max-h-[calc(100vh-230px)] overflow-auto'>
+                  <Table className="min-w-max text-sm">
+                    <TableHeader className="sticky top-0 z-30 bg-slate-50/95 backdrop-blur">
                       <TableRow>
-                        <TableHead className="sticky top-0 left-0 z-30 bg-white  w-40 min-w-[10rem]">
+                        <TableHead className="sticky top-0 left-0 z-30 w-40 min-w-[10rem] border-b border-slate-200 bg-slate-50/95 backdrop-blur">
                           <div className="flex items-center gap-2">
                             <Checkbox checked={rolesAllSelected} onCheckedChange={rolesToggleAll} />
                             <span className="text-xs ">Select</span>
                           </div>
                         </TableHead>
                         {rolesColumns.filter(c => c.visible !== false).sort((a, b) => (a.order || 0) - (b.order || 0)).map((c, idx) => (
-                          <TableHead key={c.key} className={`group hover:bg-sky-100 sticky top-0 group bg-white ${idx === 0 ? 'left-40 z-20 ' : ''}`} onContextMenu={(e) => { e.preventDefault(); setRolesHeaderMenuFor(c.key); }}>
+                          <TableHead key={c.key} className={`group sticky top-0 border-b border-slate-200 bg-slate-50/95 text-[11px] font-semibold uppercase tracking-wide text-slate-500 backdrop-blur hover:bg-violet-50 ${idx === 0 ? 'left-40 z-20 ' : ''}`} onContextMenu={(e) => { e.preventDefault(); setRolesHeaderMenuFor(c.key); }}>
                             <div className="flex items-center justify-between gap-2">
                               <span className="truncate">{c.label}</span>
                               <DropdownMenu open={rolesHeaderMenuFor === c.key} onOpenChange={(open) => setRolesHeaderMenuFor(open ? c.key : null)}>
@@ -964,8 +1040,8 @@ export default function Roles() {
                       ) : roles.length === 0 ? (
                         <TableRow><TableCell colSpan={rolesColumns.filter(c => c.visible !== false).length + 1}>No roles found.</TableCell></TableRow>
                       ) : roles.map((role, i) => (
-                        <TableRow key={role.id || i} className={`group ${rolesSelected.has(roleRowId(role)) ? 'bg-sky-100' : (i % 2 === 1 ? 'bg-gray-50' : '')} hover:bg-sky-100`}>
-                          <TableCell className={`sticky left-0 z-20  w-40 min-w-[10rem] ${rolesSelected.has(roleRowId(role)) ? 'bg-sky-100' : (i % 2 === 1 ? 'bg-gray-100' : 'bg-white')} group-hover:bg-sky-100 hover:bg-sky-200`}>
+                        <TableRow key={role.id || i} className={`group border-b border-slate-100 transition-colors ${rolesSelected.has(roleRowId(role)) ? 'bg-violet-50' : (i % 2 === 1 ? 'bg-slate-50/40' : 'bg-white')} hover:bg-violet-50/60`}>
+                          <TableCell className={`sticky left-0 z-20 w-40 min-w-[10rem] border-b border-slate-100 ${rolesSelected.has(roleRowId(role)) ? 'bg-violet-50' : (i % 2 === 1 ? 'bg-slate-50' : 'bg-white')} group-hover:bg-violet-50/60`}>
                             <div className="flex items-center gap-2">
                               <Checkbox checked={rolesSelected.has(roleRowId(role))} onCheckedChange={() => rolesToggleOne(roleRowId(role))} />
                               <Tooltip>
@@ -981,7 +1057,7 @@ export default function Roles() {
                             const rk = roleRowId(role);
                             const v = role[c.key];
                             const isEditing = rolesEditing.rowKey === rk && rolesEditing.colKey === c.key;
-                            const cellBase = (idx === 0 ? `sticky left-40 z-10  ${rolesSelected.has(roleRowId(role)) ? 'bg-sky-100' : (i % 2 === 1 ? 'bg-gray-100' : 'bg-white')} group-hover:bg-sky-100 hover:bg-sky-200 cursor-pointer` : 'hover:bg-sky-200');
+                            const cellBase = (idx === 0 ? `sticky left-40 z-10 border-b border-slate-100 ${rolesSelected.has(roleRowId(role)) ? 'bg-violet-50' : (i % 2 === 1 ? 'bg-slate-50' : 'bg-white')} group-hover:bg-violet-50/60 cursor-pointer` : 'border-b border-slate-100 hover:bg-violet-50/60');
                             const ring = (rolesBulkColKey === c.key && rolesSelected.has(roleRowId(role))) ? ' ring-2 ring-sky-400' : '';
                             return (
                               <TableCell
@@ -1007,7 +1083,16 @@ export default function Roles() {
                                   </div>
                                 ) : (
                                   <span className={idx === 0 ? 'text-primary' : ''}>
-                                    {c.key === 'is_active' ? (role.is_active ? 'Active' : 'Inactive') : (
+                                    {c.key === 'is_active' ? (
+                                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-semibold ${
+                                        role.is_active
+                                          ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
+                                          : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'
+                                      }`}>
+                                        <span className={`h-1.5 w-1.5 rounded-full ${role.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                        {role.is_active ? 'Active' : 'Inactive'}
+                                      </span>
+                                    ) : (
                                       c.key === 'created_at' ? (role.created_at ? dateTimeFormator(role.created_at) : '-') : (
                                         c.key === 'updated_at' ? (role.updated_at ? dateTimeFormator(role.updated_at) : '-') : (
                                           c.key === 'hierarchy_level' ? (role.hierarchy_level != null ? String(role.hierarchy_level) : '-') : (role[c.key] ?? '-')
@@ -1056,18 +1141,18 @@ export default function Roles() {
               tabsNode={tabsNode}
               rightActions={
                 <RequirePermission permission="permission.create">
-                  <Button onClick={openCreatePerm} className="flex items-center gap-2">
-                    <FiPlus /> Add Permission
+                  <Button onClick={openCreatePerm} className="h-9 rounded-lg bg-violet-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-violet-700">
+                    <FiPlus className="mr-1 h-4 w-4" /> Add Permission
                   </Button>
                 </RequirePermission>
               }
             />
 
-            <div className="flex-1 bg-white  min-h-0">
-              <div className="border rounded overflow-hidden h-full">
-                <div className='relative h-full overflow-x-auto overflow-y-auto'>
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
+              <div className="overflow-hidden rounded-2xl">
+                <div className='relative max-h-[calc(100vh-230px)] overflow-auto'>
                   <Table className="min-w-max ">
-                    <TableHeader className="sticky top-0 z-30 bg-white">
+                    <TableHeader className="sticky top-0 z-30 bg-slate-50/95 backdrop-blur">
                       <TableRow>
                         <TableHead className="sticky top-0 left-0 z-30 bg-white shadow-[1px_0_0_0_#e5e7eb] w-40 min-w-[10rem]">
                           <div className="flex items-center gap-2">
@@ -1076,7 +1161,7 @@ export default function Roles() {
                           </div>
                         </TableHead>
                         {permsColumns.filter(c => c.visible !== false).sort((a, b) => (a.order || 0) - (b.order || 0)).map((c, idx) => (
-                          <TableHead key={c.key} className={`hover:bg-sky-100 group sticky top-0 group bg-white ${idx === 0 ? 'left-40 z-20 shadow-[1px_0_0_0_#e5e7eb]' : ''}`} onContextMenu={(e) => { e.preventDefault(); setPermsHeaderMenuFor(c.key); }}>
+                          <TableHead key={c.key} className={`group sticky top-0 border-b border-slate-200 bg-slate-50/95 text-[11px] font-semibold uppercase tracking-wide text-slate-500 backdrop-blur hover:bg-violet-50 ${idx === 0 ? 'left-40 z-20 shadow-[1px_0_0_0_#e5e7eb]' : ''}`} onContextMenu={(e) => { e.preventDefault(); setPermsHeaderMenuFor(c.key); }}>
                             <div className="flex items-center justify-between gap-2">
                               <span className="truncate">{c.label}</span>
                               <DropdownMenu open={permsHeaderMenuFor === c.key} onOpenChange={(open) => setPermsHeaderMenuFor(open ? c.key : null)}>
@@ -1103,8 +1188,8 @@ export default function Roles() {
                       ) : availablePermissions.length === 0 ? (
                         <TableRow><TableCell colSpan={permsColumns.filter(c => c.visible !== false).length + 1}>No permissions found.</TableCell></TableRow>
                       ) : availablePermissions.map((perm, i) => (
-                        <TableRow key={perm.id || i} className={`group ${permsSelected.has(permRowId(perm)) ? 'bg-sky-100' : (i % 2 === 1 ? 'bg-gray-50' : '')} hover:bg-sky-100`}>
-                          <TableCell className={`sticky left-0 z-20 shadow-[1px_0_0_0_#e5e7eb] w-40 min-w-[10rem] ${permsSelected.has(permRowId(perm)) ? 'bg-sky-100' : (i % 2 === 1 ? 'bg-gray-100' : 'bg-white')} group-hover:bg-sky-100 hover:bg-sky-200`}>
+                        <TableRow key={perm.id || i} className={`group border-b border-slate-100 transition-colors ${permsSelected.has(permRowId(perm)) ? 'bg-violet-50' : (i % 2 === 1 ? 'bg-slate-50/40' : 'bg-white')} hover:bg-violet-50/60`}>
+                          <TableCell className={`sticky left-0 z-20 shadow-[1px_0_0_0_#e5e7eb] w-40 min-w-[10rem] border-b border-slate-100 ${permsSelected.has(permRowId(perm)) ? 'bg-violet-50' : (i % 2 === 1 ? 'bg-slate-50' : 'bg-white')} group-hover:bg-violet-50/60`}>
                             <div className="flex items-center gap-2">
                               <Checkbox checked={permsSelected.has(permRowId(perm))} onCheckedChange={() => permsToggleOne(permRowId(perm))} />
                               <Tooltip>
@@ -1120,7 +1205,7 @@ export default function Roles() {
                             const rk = permRowId(perm);
                             const v = perm[c.key];
                             const isEditing = permsEditing.rowKey === rk && permsEditing.colKey === c.key;
-                            const cellBase = (idx === 0 ? `sticky left-40 z-10 shadow-[1px_0_0_0_#e5e7eb] ${permsSelected.has(permRowId(perm)) ? 'bg-sky-100' : (i % 2 === 1 ? 'bg-gray-100' : 'bg-white')} group-hover:bg-sky-100 hover:bg-sky-200 cursor-pointer` : 'hover:bg-sky-200');
+                            const cellBase = (idx === 0 ? `sticky left-40 z-10 shadow-[1px_0_0_0_#e5e7eb] border-b border-slate-100 ${permsSelected.has(permRowId(perm)) ? 'bg-violet-50' : (i % 2 === 1 ? 'bg-slate-50' : 'bg-white')} group-hover:bg-violet-50/60 cursor-pointer` : 'border-b border-slate-100 hover:bg-violet-50/60');
                             const ring = (permsBulkColKey === c.key && permsSelected.has(permRowId(perm))) ? ' ring-2 ring-sky-400' : '';
                             return (
                               <TableCell
@@ -1150,7 +1235,16 @@ export default function Roles() {
                                   </div>
                                 ) : (
                                   <span className={idx === 0 ? 'text-primary' : ''}>
-                                    {c.key === 'is_active' ? (perm.is_active ? 'Active' : 'Inactive') : (
+                                    {c.key === 'is_active' ? (
+                                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-semibold ${
+                                        perm.is_active
+                                          ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
+                                          : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'
+                                      }`}>
+                                        <span className={`h-1.5 w-1.5 rounded-full ${perm.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                        {perm.is_active ? 'Active' : 'Inactive'}
+                                      </span>
+                                    ) : (
                                       c.key === 'created_at' ? (perm.created_at ? dateTimeFormator(perm.created_at) : '-') : (
                                         c.key === 'updated_at' ? (perm.updated_at ? dateTimeFormator(perm.updated_at) : '-') : (
                                           c.key === 'display_name' ? (perm.display_name || perm.displayName || '-') : (perm[c.key] ?? '-')
@@ -1183,7 +1277,7 @@ export default function Roles() {
 
       {/* Role Create/Edit Dialog */}
       <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <DialogHeader>
             <DialogTitle>{roleDialogMode === "create" ? "Create Role" : "Edit Role"}</DialogTitle>
           </DialogHeader>
@@ -1358,7 +1452,7 @@ export default function Roles() {
 
       {/* View Permissions Dialog (NEW) */}
       <Dialog open={viewPermsOpen} onOpenChange={setViewPermsOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <DialogHeader>
             <DialogTitle>Permissions for {viewPermsRoleName || "role"}</DialogTitle>
           </DialogHeader>
@@ -1385,7 +1479,7 @@ export default function Roles() {
 
       {/* Role Inactivate Confirmation */}
       <AlertDialog open={Boolean(roleDeleteTarget)} onOpenChange={(open) => { if (!open) setRoleDeleteTarget(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Inactivate role?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1404,7 +1498,7 @@ export default function Roles() {
 
       {/* Permission Create/Edit Dialog */}
       <Dialog open={permDialogOpen} onOpenChange={setPermDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <DialogHeader>
             <DialogTitle>{permDialogMode === "create" ? "Create Permission" : "Edit Permission"}</DialogTitle>
           </DialogHeader>
@@ -1452,7 +1546,7 @@ export default function Roles() {
 
       {/* Permission Delete Confirmation */}
       <AlertDialog open={Boolean(permDeleteTarget)} onOpenChange={(open) => { if (!open) setPermDeleteTarget(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete permission?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1471,7 +1565,7 @@ export default function Roles() {
 
 
       <Dialog open={rolesPreviewOpen} onOpenChange={(o) => { if (!o) closeRolePreview(); }}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <DialogHeader>
             <DialogTitle>Role Preview</DialogTitle>
           </DialogHeader>
@@ -1502,7 +1596,7 @@ export default function Roles() {
         </DialogContent>
       </Dialog>
       <Dialog open={permsPreviewOpen} onOpenChange={(o) => { if (!o) closePermPreview(); }}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-slate-200 shadow-2xl">
           <DialogHeader>
             <DialogTitle>Permission Preview</DialogTitle>
           </DialogHeader>
