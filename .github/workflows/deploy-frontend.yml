@@ -9,8 +9,9 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy Frontend
+    name: Build and Deploy PROD Frontend
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout Repository
@@ -40,7 +41,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "dist/*"
-          target: "/tmp/uat-salon-adminpanel"
+          target: "/tmp/salon-adminpanel"
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -49,9 +50,11 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            rm -rf /var/www/uat_salon_adminpanel_app/uat-salon-adminpanel/*
-            cp -r /tmp/uat-salon-adminpanel/dist/* /var/www/uat_salon_adminpanel_app/uat-salon-adminpanel/
-            chmod -R 755 /var/www/uat_salon_adminpanel_app/uat-salon-adminpanel
-            rm -rf /tmp/uat-salon-adminpanel
+            set -e
 
-            echo "Frontend deployment completed"
+            rm -rf /var/www/salon_adminpanel_app/salon-adminpanel/*
+            cp -r /tmp/salon-adminpanel/dist/* /var/www/salon_adminpanel_app/salon-adminpanel/
+            chmod -R 755 /var/www/salon_adminpanel_app/salon-adminpanel
+            rm -rf /tmp/salon-adminpanel
+
+            echo "PROD frontend deployment completed"
