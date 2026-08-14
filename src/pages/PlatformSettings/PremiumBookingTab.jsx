@@ -14,14 +14,19 @@ const DEFAULT_FORM = {
   enabled: true,
   fee: 199,
   currency: 'INR',
+  payment_window_minutes: 15,
 };
 
 function normalizePremiumConfig(raw) {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_FORM };
+  const windowMinutes = Number(raw.payment_window_minutes);
   return {
     enabled: raw.enabled !== false,
     fee: Number(raw.fee) || 199,
     currency: raw.currency || 'INR',
+    payment_window_minutes: Number.isFinite(windowMinutes) && windowMinutes >= 1
+      ? Math.min(120, Math.round(windowMinutes))
+      : 15,
   };
 }
 
@@ -66,6 +71,10 @@ export default function PremiumBookingTab() {
     const nextErrors = {};
     if (!form.fee || Number(form.fee) <= 0) nextErrors.fee = 'Fee must be greater than 0';
     if (!String(form.currency || '').trim()) nextErrors.currency = 'Required';
+    const windowMinutes = Number(form.payment_window_minutes);
+    if (!Number.isFinite(windowMinutes) || windowMinutes < 1 || windowMinutes > 120) {
+      nextErrors.payment_window_minutes = 'Must be between 1 and 120 minutes';
+    }
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error('Please fix the highlighted fields');
@@ -79,8 +88,9 @@ export default function PremiumBookingTab() {
           enabled: form.enabled,
           fee: Number(form.fee),
           currency: String(form.currency).trim().toUpperCase(),
+          payment_window_minutes: Number(form.payment_window_minutes),
         },
-        description: 'Default premium urgent booking fee (salon override fallback)',
+        description: 'Default premium urgent booking fee and payment window',
       });
       toast.success('Premium booking configuration saved');
       await loadConfig();
@@ -100,9 +110,10 @@ export default function PremiumBookingTab() {
       <div>
         <h2 className="text-lg font-medium">Premium / Urgent Booking</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Control whether urgent bookings are enabled platform-wide and set the default fee.
-          Salon owners can set their own fee per salon in the mobile app; salons without a
-          custom fee use this default.
+          Control whether urgent bookings are enabled platform-wide, set the default fee,
+          and how long customers have to pay after a salon accepts. Salon owners can set
+          their own fee per salon in the mobile app; salons without a custom fee use this
+          default.
         </p>
       </div>
 
@@ -148,6 +159,29 @@ export default function PremiumBookingTab() {
             placeholder="INR"
           />
           {errors.currency && <p className="text-xs text-red-600">{errors.currency}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="payment_window_minutes">
+            Payment window after accept <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="payment_window_minutes"
+            type="number"
+            min="1"
+            max="120"
+            step="1"
+            value={form.payment_window_minutes}
+            disabled={!canUpdate}
+            onChange={(e) => updateField('payment_window_minutes', e.target.value)}
+          />
+          {errors.payment_window_minutes && (
+            <p className="text-xs text-red-600">{errors.payment_window_minutes}</p>
+          )}
+          <p className="text-xs text-gray-500">
+            Minutes the customer has to pay the premium fee after the salon accepts.
+            If unpaid, the urgent booking is cancelled and the slot is freed. 1–120.
+          </p>
         </div>
       </div>
 
