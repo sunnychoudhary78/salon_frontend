@@ -317,9 +317,16 @@ export default function Sidebar() {
       perms: [
         "role.read",
         "permission.read",
+        "user.read",
       ],
 
       subItems: [
+        {
+          key: "users",
+          label: "Manage Users",
+          to: "/users",
+          perms: ["user.read"],
+        },
         {
           key: "roles",
           label: "Roles & Permissions",

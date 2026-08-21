@@ -25,6 +25,7 @@ const PlatformSettings = React.lazy(
 );
 const AuditLogs = React.lazy(() => import("./pages/AuditLogs/AuditLogs"));
 const Roles = React.lazy(() => import("./pages/RolesAndPermissions/Roles"));
+const Users = React.lazy(() => import("./pages/Users/Users"));
 const Payments = React.lazy(() => import("./pages/Payments/Payments"));
 const SettlementLedger = React.lazy(
   () => import("./pages/Settlements/SettlementLedger"),
@@ -182,6 +183,14 @@ export default function App() {
             element={
               <RequirePermission permission="auditLog.read">
                 <AuditLogs />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <RequirePermission permission="user.read">
+                <Users />
               </RequirePermission>
             }
           />
