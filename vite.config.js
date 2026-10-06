@@ -37,6 +37,11 @@ export default defineConfig(({ mode }) => {
 
       tailwindcss(),
     ],
+    server: {
+      watch: {
+        ignored: ["**/public/**/*.mp4"],
+      },
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

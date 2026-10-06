@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { restoreSession } from "./store/auth/authSlice";
 
 const LoginPage = React.lazy(() => import("./pages/Login"));
+const HomePage = React.lazy(() => import("./pages/Home/HomePage"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const SalonApplications = React.lazy(
   () => import("./pages/SalonApplications/SalonApplications"),
@@ -62,6 +63,7 @@ export default function App() {
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
 
         <Route
@@ -71,7 +73,6 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
 
           <Route
